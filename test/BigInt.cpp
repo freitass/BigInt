@@ -12,13 +12,21 @@ TEST(BigInt, ShouldNotBeEqual) {
   EXPECT_FALSE(BigInt(1) == BigInt(2));
 }
 
-//int main(int, char**) {
-//  cout << BigInt(1) + BigInt(2) << endl;
-//  cout << BigInt(1000000000000000000) << endl;
-//  cout << BigInt(1000000000000000000) + BigInt(1000000000000000000) << endl;
-//  cout << boolalpha << (BigInt(1000000000000000000) == BigInt(2000000000000000000)) << endl;
-//  cout << boolalpha << (BigInt(2000000000000000000) == BigInt(2000000000000000000)) << endl;
-//  //cout << BigInt(10000000000000000000) * BigInt(2) << endl;
-//  return 0;
-//}
+TEST(BigInt, ShouldAddOneAndTwo) {
+  EXPECT_EQ(BigInt(3), BigInt(1) + BigInt(2));
+}
+
+TEST(BigInt, ShouldSupportBigIntegers) {
+  EXPECT_NO_THROW(BigInt(1000000000000000000));
+}
+
+TEST(BigInt, ShouldOutputToStreams) {
+  ostringstream oss;
+  oss << BigInt(1000000000000000000);
+  EXPECT_EQ(std::string("1000000000000000000"), oss.str());
+}
+
+TEST(BigInt, ShouldAddBigIntegers) {
+  EXPECT_EQ(BigInt(2000000000000000000), BigInt(1000000000000000000) + BigInt(1000000000000000000));
+}
 
