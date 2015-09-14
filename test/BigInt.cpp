@@ -30,3 +30,11 @@ TEST(BigInt, ShouldAddBigIntegers) {
   EXPECT_EQ(BigInt(2000000000000000000), BigInt(1000000000000000000) + BigInt(1000000000000000000));
 }
 
+//TEST(BigInt, ShouldMultiplySmallIntegers) {
+//  EXPECT_EQ(BigInt(6), BigInt(3) * BigInt(2));
+//}
+//
+//TEST(BigInt, ShouldMultiplyBigAndSmallIntegers) {
+//  EXPECT_EQ(BigInt(2000000000000000000), BigInt(1000000000000000000) * BigInt(2));
+//}
+

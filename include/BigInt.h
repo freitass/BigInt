@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -8,32 +9,35 @@ class BigInt {
   static const uint64_t MAX = 1000000000;
   
 public:
-  BigInt() : value_(0), tail_(nullptr) {}
+  BigInt() : value_() {}
 
-  BigInt(uint64_t value) : value_(value), tail_(nullptr) {
-  	// cout << __PRETTY_FUNCTION__ << " value:" << value << endl;
-  	handle_overflow(value_);
+  BigInt(uint64_t value) : value_(1, value) {
+  	handle_overflow(value_.begin());
   }
   
-  BigInt(const BigInt &bi) : value_(0), tail_(nullptr) {
+  BigInt(const BigInt &bi) : value_() {
   	*this = bi;
   }
 
   BigInt& operator=(const BigInt &rhs) {
     if (this != &rhs) {
       value_ = rhs.value_;
-      if (rhs.tail_)
-      	tail_ = make_shared<BigInt>(*rhs.tail_);
     }
     return *this;
   }
 
   BigInt& operator+=(const BigInt &rhs) {
-    handle_overflow(value_ += rhs.value_);
-    if (rhs.tail_) {
-    	if (!tail_)
-    		tail_ = make_shared<BigInt>();
-    	*tail_ += *rhs.tail_;
+    uint64_t carry = 0;
+    for (size_t i = 0; i < rhs.value_.size(); ++i) {
+      if (i == value_.size()) {
+        value_.push_back(0);
+      }
+      value_[i] += rhs.value_[i] + carry;
+      carry = value_[i] / MAX;
+      value_[i] %= MAX;
+    }
+    if (carry > 0) {
+      value_.push_back(carry);
     }
     return *this;
   }
@@ -44,7 +48,7 @@ public:
   
   BigInt& operator*=(const BigInt &rhs) {
   	// TODO
-	return *this;
+    return *this;
   }
   
   const BigInt operator*(const BigInt& rhs) const {
@@ -57,42 +61,43 @@ public:
   }
   
   bool operator==(const BigInt& rhs) const {
-  	if (value_ != rhs.value_)
-  		return false;
-  	if (!tail_ && !rhs.tail_)
-  		return true;
-  	if (!tail_ || !rhs.tail_)
-  		return false;
-  	return *tail_ == *rhs.tail_;
+    return value_ == rhs.value_;
   }
 
   friend ostream& operator<<(ostream& os, const BigInt& bi);
 
 private:
-  void overflow(uint64_t value) {
-    if (!tail_) {
-      tail_ = make_shared<BigInt>();
+  void overflow(uint64_t value, vector<uint64_t>::iterator it) {
+    if (++it == value_.end()) {
+      value_.push_back(value);
+      it = --value_.end();
+    } else {
+      *it += value;
     }
-    *tail_ += BigInt(value);
+    handle_overflow(it);
   }
 
-  void handle_overflow(uint64_t &value) {
+  void handle_overflow(vector<uint64_t>::iterator it) {
+    uint64_t &value = *it;
     if (value >= MAX) {
-      overflow(value / MAX);
+      uint64_t carry = value / MAX;
       value %= MAX;
+      overflow(carry, it);
     }
   }
 
-  uint64_t value_;
-  shared_ptr<BigInt> tail_;
+  vector<uint64_t> value_;
 };
 
 ostream& operator<<(ostream& os, const BigInt& bi) {
-	char fill = os.fill();
-	streamsize width = os.width();
-	if (bi.tail_) {
-		os << *bi.tail_ << setw(9) << setfill('0');
-	}
-	return os << bi.value_ << setw(width) << setfill(fill);
+  auto it = bi.value_.crbegin();
+  if (it != bi.value_.crend()) {
+    os << *(it++);
+  }
+
+  for_each(it, bi.value_.crend(), [&os](const uint64_t &value) {
+      os << setw(9) << setfill('0') << value;
+      });
+	return os;
 }
 
